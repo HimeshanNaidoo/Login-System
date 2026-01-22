@@ -1,343 +1,131 @@
-Login system :
 <?php
+// Start session and include required files
 session_start();
 include("connection.php");
 include("functions.php");
-if($_SERVER['REQUEST_METHOD'] == "POST")
-{
-$email = $_POST['email'];
-$password = $_POST['password'];
-if(!empty($user_name) && !empty($email) && !empty($password))
-{
 
-$query = "select * from users where email = '$email' limit1");
-$result = mysqli_query($con, $query);
-if($result)
-{
-if($result && mysqli_num_rows($result) >0)
-{
-$user_data = mysqli_fetch_assoc($result);
-if($user_data['password'] === $password)
-{
-$_SESSION['email'] = $user_data['email'];
-header("Location: index.php");
- die;
-}
-}
-}
-}else
-{
-echo "informations is wrong";
-}
+// ================== LOGIN ==================
+if($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['email']) && isset($_POST['password'])) {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    if(!empty($email) && !empty($password)) {
+        $query = "SELECT * FROM users WHERE email = '$email' LIMIT 1";
+        $result = mysqli_query($con, $query);
+
+        if($result && mysqli_num_rows($result) > 0) {
+            $user_data = mysqli_fetch_assoc($result);
+            if($user_data['password'] === $password) {
+                $_SESSION['user_id'] = $user_data['user_id'];
+                header("Location: index.php");
+                die;
+            } else {
+                echo "Password is incorrect";
+            }
+        } else {
+            echo "Email not found";
+        }
+    } else {
+        echo "Please enter both email and password";
+    }
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
-<title> Login </title>
-</head>
-<body>
-<style type="text/css">
-#text{
-height: 25px;
-border-radius: 5px;
-padding: 4px
-border: solid thin #aaa;
-width: 100%;
+<title>Login</title>
+<style>
+#text {
+    height: 25px;
+    border-radius: 5px;
+    padding: 4px;
+    border: solid thin #aaa;
+    width: 100%;
 }
-#button{
-padding 10px;
-width: 100px;
-color: white;
-background-color: Lightblue;
-border: none;
+#button {
+    padding: 10px;
+    width: 100px;
+    color: white;
+    background-color: Lightblue;
+    border: none;
 }
-#box{
-background-color: bule;
-margin: auto;
-width: 300px;
-paddding: 20px;
+#box {
+    background-color: blue;
+    margin: auto;
+    width: 300px;
+    padding: 20px;
 }
 </style>
-<div id= "box">
-<form method= "post">
-
-<div style="font-size: 20px;margin: 10px;">Login</div>
- <input type="email" name="email" placeholder="Email:"><br>
-
-
-
- <input type="password" name="password" placeholder="Password:"><br>
-
-
-
- <input id="button" type="submit" value="Login" name="submit">
- <a href="register.php">Ckick to Register</a>
-
-
-
- </form>
- </div>
-Dashboard:
-<?php
-session_start();
-include("connection.php")
-include("functions.php")
-$user_data = check_login($con);
-?>
-<!DOCTYPE html>
-<html>
-<head>
-<title> Social media page </title>
 </head>
 <body>
-<a href="userpage.php"></a>
-<a href="logout.php">Logout</a>
-<?php echo $user_data['user_name']
-?>
+<div id="box">
+    <form method="post">
+        <div style="font-size: 20px;margin: 10px;">Login</div>
+        <input type="email" name="email" placeholder="Email:" required><br><br>
+        <input type="password" name="password" placeholder="Password:" required><br><br>
+        <input id="button" type="submit" value="Login">
+        <a href="register.php">Click to Register</a>
+    </form>
+</div>
 </body>
 </html>
+
 <?php
-session_start();
-include("connection.php");
-include("functions.php");
-if($_SERVER['REQUEST_METHOD'] == "POST")
-{
-$image = $_POST['image'];
-$text = $_POST['text'];
-$date = $_POST['date'];
-if(!empty($Post) && !empty($image) && !empty($text) && !empty($date))
-{
+// ================== REGISTRATION ==================
+if($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['user_name'])) {
+    $user_name = $_POST['user_name'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-$query = "select * from users where images = '$images' limit1");
-$result = mysqli_query($con, $query);
-if($result)
-{
-if($result && mysqli_num_rows($result) >0)
-{
-$Post = mysqli_fetch_assoc($result)
-<?
-<!DOCTYPE html>
-<html>
-<head>
-<title> Post </title>
-</head>
-<body>
-<h1> RICHFIELD </h1>
-<style type="text/css">
-#text{
-height: 30px;
-border-radius: 20px;
-padding: 25px
-border: solid thin #aaa;
-width: 200%;
+    if(!empty($user_name) && !empty($email) && !empty($password) && !is_numeric($user_name)) {
+        $query = "INSERT INTO users (user_name, email, password) VALUES ('$user_name','$email','$password')";
+        mysqli_query($con, $query);
+        header("Location: Social_Media_Login.php");
+        die;
+    } else {
+        echo "Information is wrong";
+    }
 }
-#button{
-padding 10px;
-width: 100px;
-color: black;
-background-color: light bule;
-border: none;
+
+// ================== POSTING ==================
+if($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['text'])) {
+    $image = $_POST['image'] ?? '';
+    $text = $_POST['text'];
+    $date = $_POST['date'] ?? date('Y-m-d');
+
+    if(!empty($text)) {
+        $query = "INSERT INTO posts (user_id, image, text, date) VALUES ('{$_SESSION['user_id']}','$image','$text','$date')";
+        mysqli_query($con, $query);
+    }
 }
-#box{
-background-color: bule;
-margin: auto;
-width: 300px;
-paddding: 20px;
+
+// ================== SEARCH ==================
+if($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['search_name'])) {
+    $search_name = $_POST['search_name'];
+    $query = "SELECT * FROM users WHERE user_name LIKE '%$search_name%'";
+    $result = mysqli_query($con, $query);
 }
-</style>
-<div id= "box">
-<form method= "post">
 
-<div style="font-size: 20px;margin: 10px;">Post</div>
- <input type="Share something" name="share something" placeholder="Share
-something:"><br>
-
-
-
-
-
-
-
- <input id="button" type="submit" value="Post" name="submit">
- <a href="index.php"> Upload New Profile Picutre</a>
-
-
-
-
- </form>
- </div>
-
-
-</body>
-</html>
-
-
-</body>
-</html>
-<?php
-session_start();
-include("connection.php");
-include("functions.php");
-if($_SERVER['REQUEST_METHOD'] == "POST")
-{
-$id = $POST['id'];
-$user_name = $_POST['user_name'];
-$email = $_POST['email'];
-$password = $_POST['password'];
-if(!empty($user_name) && !empty($email) && !empty($password) &&
-!is_numeric($user_name)
-{
-
-$query = "insert into users (user_name,email,password) values
-('$id','$user_name','$email','$password')";
-mysqli_query($con, $query);
-header("Location: Social_Media_Login.php");
-die;
-}else
-{
-echo "informations is wrong";
+// ================== CHECK LOGIN FUNCTION ==================
+function check_login($con) {
+    if(isset($_SESSION['user_id'])) {
+        $id = $_SESSION['user_id'];
+        $query = "SELECT * FROM users WHERE user_id = '$id' LIMIT 1";
+        $result = mysqli_query($con, $query);
+        if($result && mysqli_num_rows($result) > 0) {
+            $user_data = mysqli_fetch_assoc($result);
+            return $user_data;
+        }
+    }
+    header("Location: Social_Media_Login.php");
+    die;
 }
+
+// ================== LOGOUT ==================
+if(isset($_GET['logout'])) {
+    unset($_SESSION['user_id']);
+    header("Location: Social_Media_Login.php");
+    die;
 }
 ?>
-<?php
-$dbhost = "localhost";
-$dbuser = "root";
-$dbemail = "localhost";
-$dbpass = "";
-$dbuser_name = "social_network";
-if(!$con = mysqli_connect($dbhost,$dbuser,$dbemail,$dbpass,$dbname))
-{
-die("failed to connect!");
-}
-?>
-<?php
-function check_login($con)
-{
-if(isset($_SESSION['user_id']))
-{
-$id = $_SESSION['user_id'))
-{
-$id = $_SESSION['user_id'];
-$query = "select * from user Where user_id = '$id' limit 1";
-$result = myspli_query($con,$query);
-if($result && mysqli_num_rows($result) >0)
-{
-$user_data = mysqli_fetch_assoc($result);
-return $user_data;
-}
-}
-header("Loaction: Social_Media_Login.php");
-die;
-}
-function random_num($length)
-{
-$text = "";
-if($length < 5)
-{
-$length = 5;
-}
-$len = rand(4,$length);
-for ($i=0; $i <$len; $i++) {
-$text .= rand(0,9);
-}
-
-
-
-
-
-
- <input id="button" type="submit" value="Search" name="submit">
- <a href="index.php"> View Profile</a>
-
-
-
-
- </form>
- </div>
-
-
-</body>
-</html>
-<?php
-session_start();
-include("connection.php");
-include("functions.php");
-if($_SERVER['REQUEST_METHOD'] == "POST")
-{
-$user_name = $_POST['user_name'];
-$email = $_POST['email'];
-$messages = $_POST['messagess'];
-if(!empty($Post) && !empty($image) && !empty($text) && !empty($date))
-{
-
-$query = "select * from users where images = '$images' limit1");
-$result = mysqli_query($con, $query);
-if($result)
-{
-if($result && mysqli_num_rows($result) >0)
-{
-$Post = mysqli_fetch_assoc($result)
-<?
-<!DOCTYPE html>
-<html>
-<head>
-<title> Post </title>
-</head>
-<body>
-<h1> RICHFIELD </h1>
-<style type="text/css">
-#text{
-height: 30px;
-border-radius: 20px;
-padding: 25px
-border: solid thin #aaa;
-width: 200%;
-}
-#button{
-padding 10px;
-width: 100px;
-color: black;
-background-color: light bule;
-border: none;
-}
-#box{
-background-color: bule;
-margin: auto;
-width: 300px;
-paddding: 20px;
-}
-</style>
-<div id= "box">
-<form method= "post">
-
-<div style="font-size: 20px;margin: 10px;">Post</div>
- <input type="Sarch by name" name="Sarch by name" placeholder="Sarch by
-name:"><br>
-
-
-
-
-
-
-
- <input id="button" type="submit" value="Search" name="submit">
- <a href="index.php"> View Profile</a>
-
-
-
-
- </form>
- </div>
-
-
-</body>
-</html>
-<?php
-session_start();
-if(isset($_SESSION['user_id']))
-{
-unset($_SESSION['User_id']);
-}
-header("Location: Social_Media_Login.php");
-<?
